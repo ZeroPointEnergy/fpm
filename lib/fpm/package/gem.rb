@@ -36,6 +36,9 @@ class FPM::Package::Gem < FPM::Package
     "prefixed?", :default => true
   option "--env-shebang", :flag, "Should the target package have the " \
     "shebang rewritten to use env?", :default => true
+  option "--shebang", "SHEBANG",
+          "Replace the shebang in the executables in the bin path with a " \
+          "custom string", :default => "nil"
 
   option "--prerelease", :flag, "Allow prerelease versions of a gem", :default => false
   option "--disable-dependency", "gem_name",
@@ -195,6 +198,22 @@ class FPM::Package::Gem < FPM::Package
     ::FileUtils.mkdir_p(bin_path)
     args << gem_path
     safesystem(*args)
+
+    # Replace the shebangs in the executables
+    if attributes[:shebang]
+      ::Dir.entries(bin_path).each do |file_name|
+        # exclude . and ..
+        next if ['.', '..'].include?(file_name)
+        # exclude everything which is not a file
+        file_path = File.join(bin_path, file_name)
+        next unless File.ftype(file_path) == 'file'
+        # replace shebang in files if there is one
+        file = File.read(file_path)
+        if file.gsub!(/^#!.*$/, "#!#{attributes[:shebang]}")
+          File.open(file_path, 'w'){|f| f << file}
+        end
+      end
+    end
 
     # Delete bin_path if it's empty, and any empty parents (#612)
     # Above, we mkdir_p bin_path because rubygems aborts if the parent
