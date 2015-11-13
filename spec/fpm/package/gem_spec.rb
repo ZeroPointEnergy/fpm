@@ -77,7 +77,7 @@ describe FPM::Package::Gem, :if => have_gem do
 
   context "when :shebang is nil/default" do
     before :each do
-      subject.attributes[:shebang] = nil
+      subject.attributes[:gem_shebang] = nil
       subject.attributes[:gem_bin_path] = '/usr/bin'
     end
 
@@ -90,7 +90,7 @@ describe FPM::Package::Gem, :if => have_gem do
 
   context "when :shebang is set" do
     before :each do
-      subject.attributes[:shebang] = '/opt/special/bin/ruby'
+      subject.attributes[:gem_shebang] = '/opt/special/bin/ruby'
       subject.attributes[:gem_bin_path] = '/usr/bin'
     end
 

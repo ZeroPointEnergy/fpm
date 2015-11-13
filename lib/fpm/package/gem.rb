@@ -30,16 +30,15 @@ class FPM::Package::Gem < FPM::Package
   option "--gem", "PATH_TO_GEM",
           "The path to the 'gem' tool (defaults to 'gem' and searches " \
           "your $PATH)", :default => "gem"
+  option "--shebang", "SHEBANG",
+          "Replace the shebang in the executables in the bin path with a " \
+          "custom string", :default => "nil"
   option "--fix-name", :flag, "Should the target package name be prefixed?",
     :default => true
   option "--fix-dependencies", :flag, "Should the package dependencies be " \
     "prefixed?", :default => true
   option "--env-shebang", :flag, "Should the target package have the " \
     "shebang rewritten to use env?", :default => true
-  option "--shebang", "SHEBANG",
-          "Replace the shebang in the executables in the bin path with a " \
-          "custom string", :default => "nil"
-
   option "--prerelease", :flag, "Allow prerelease versions of a gem", :default => false
   option "--disable-dependency", "gem_name",
     "The gem name to remove from dependency list",
@@ -200,7 +199,7 @@ class FPM::Package::Gem < FPM::Package
     safesystem(*args)
 
     # Replace the shebangs in the executables
-    if attributes[:shebang]
+    if attributes[:gem_shebang]
       ::Dir.entries(bin_path).each do |file_name|
         # exclude . and ..
         next if ['.', '..'].include?(file_name)
@@ -209,7 +208,7 @@ class FPM::Package::Gem < FPM::Package
         next unless File.ftype(file_path) == 'file'
         # replace shebang in files if there is one
         file = File.read(file_path)
-        if file.gsub!(/^#!.*$/, "#!#{attributes[:shebang]}")
+        if file.gsub!(/^#!.*$/, "#!#{attributes[:gem_shebang]}")
           File.open(file_path, 'w'){|f| f << file}
         end
       end
